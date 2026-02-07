@@ -1,0 +1,22 @@
+1. sta
+2. env should look like this: 
+env.local
+COINSTATS_API_KEY=
+UPSTASH_REDIS_REST_URL="h
+UPSTASH_REDIS_REST_TOKEN=A
+GOOGLE_CLIENT_ID=7
+GOOGLE_CLIENT_SECRET=G
+NEXTAUTH_SECRET=a
+NEXTAUTH_URL=http://localhost:3000
+
+env
+MONGO_URI=mo
+MAIL_USER=c
+
+MAIL_PASS=fg
+# Server Port
+PORT=5000
+PASSWORD=olushola12345
+
+
+3. 
