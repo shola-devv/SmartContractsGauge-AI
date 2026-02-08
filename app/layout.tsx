@@ -2,15 +2,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Providers } from "@/providers/provider";
-import DatabaseWarmer from "@/components/DatabaseWarmer"; // New component
-import { inter } from "./fonts";
-import { DarkModeProvider } from "@/components/useDarkModeInit";
 import Script from "next/script";
-import GAListener from "@/components/GAListener";
-import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from '@/lib/queryClient';
-
+import { inter } from "./fonts";
 
 
 const geistSans = localFont({
@@ -126,15 +119,7 @@ export default function RootLayout({
           `}
         </Script>
 
-         <DarkModeProvider>
-            <Providers>
-            <DatabaseWarmer />
-            <GAListener />
-    <QueryClientProvider client={queryClient}>
-           {children}
-       </QueryClientProvider>
-            </Providers>
-        </DarkModeProvider>
+        {children}
       </body>
     </html>
   );

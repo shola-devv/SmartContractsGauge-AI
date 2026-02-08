@@ -1,428 +1,231 @@
-// NOTE: This page contains branding and copy from the previous project.
-// Replace text, images and assets with your app's content. Consider
-// centralizing site-wide strings in an env var like `NEXT_PUBLIC_SITE_NAME`.
-
-"use client";
-
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
-import Image from "next/image";
-import AuthModal from "@/components/AuthModal";
-import SlideIn from '@/components/SlideIn';
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Loader, Zap, Coins } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-interface CoinData {
-  id: string;
-  name: string;
-  symbol: string;
-  price: number;
-  icon: string;
-  priceChange1d: number;
+interface ChainGasData {
+  chainId: string;
+  chainName: string;
+  gasPrice: number;
+  tokenSymbol: string;
+  estimatedGasCost: number;
 }
 
-interface ApiResponse {
-  source: string;
-  data: {
-    result: CoinData[];
-  };
-  timestamp: number;
-  age?: number;
-  rateLimitRemaining?: number;
+interface AnalysisResult {
+  success: boolean;
+  contractCode: string;
+  complexity: string;
+  gasEstimates: ChainGasData[];
+  optimizationSuggestions: string;
+  error?: string;
 }
 
-const TemplateApp = () => {
-  const [currentCoin, setCurrentCoin] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [coins, setCoins] = useState<CoinData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  
- 
-  // Fetch market data on component mount and every 3 minutes
+const HomePage = () => {
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [contractCode, setContractCode] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [showInput, setShowInput] = useState(true);
+  const router = useRouter();
+
   useEffect(() => {
-    const fetchMarketData = async () => {
+    const isAnalyzing = localStorage.getItem("isAnalyzing");
+    const savedCode = localStorage.getItem("analysisContractCode");
+    const savedResult = localStorage.getItem("analysisResult");
+
+    if (savedCode) {
+      setContractCode(savedCode);
+    }
+
+    if (savedResult) {
       try {
-        const response = await fetch("/api/market-data");
-        const data: ApiResponse = await response.json();
-
-        if (data.data && data.data.result) {
-          setCoins(data.data.result);
-        }
+        const result = JSON.parse(savedResult);
+        setAnalysisResult(result);
+        setShowInput(false);
+        setIsLoading(false);
       } catch (error) {
-        console.error("Failed to fetch market data:", error);
-      } finally {
-        setLoading(false);
+        console.error("Error parsing analysis result:", error);
+        setIsLoading(false);
       }
-    };
-
-    fetchMarketData();
-
-    // Refresh every 3 minutes (180000 ms)
-    const refreshInterval = setInterval(fetchMarketData, 180000);
-
-    return () => clearInterval(refreshInterval);
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
-  useEffect(() => {
-    if (coins.length === 0) return;
-
-    const interval = setInterval(() => {
-      setIsAnimating(true);
-      setTimeout(() => {
-        setCurrentCoin((prev) => (prev + 1) % coins.length);
-        setIsAnimating(false);
-      }, 500);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [coins.length]);
-
-  const features = [
-    {
-      title: "Hassle-Free Tracking",
-      description:
-        "CryptoSnoop helps you track your crypto assets and holdings hassle-free without necessarily connecting your wallet. Monitor your portfolio and wallets with real-time data and insights accross all chains.",
-      icon: "/eye.png",
-    },
-    {
-      title: "Easy Management",
-      description:
-        "Management help for keeping your crypto account addresses easily accessible. Store and organize all your wallets and label them securely all in one centralized location.",
-      icon: "/wallet.png",
-    },
-    {
-      title: "Easy Login and Top-tier Security",
-      description:
-        "Your security is our priority. Access your portfolio with confidence knowing your data is protected with industry-leading encryption and security protocols.",
-      icon: "/padlock.png",
-    },
-     
-  ];
-
-  //second part text
-  const additions = [
-  {
-    title: "Secure Crypto portfolio tracking",
-    description:
-      "Track your crypto assets effortlessly with just a click, keeping all your holdings organized and up-to-date.",
-    icon: "/bitcoinbag.png",
-  },
-  {
-    title: "Remote wallet monitoring across all chains",
-    description:
-       "Paste your wallet addresses to instantly view your portfolio and holdings across multiple blockchains, all in one centralized dashboard.",
-    icon: "/greencursor.png",
-  },
-  {
-    title: "secure labelling for all your addresses",
-    description:
-      "Organize and label all your wallets safely, ensuring easy access and management while keeping your account information secure.",
-    icon: "/coinbag.png",
-  },
-  {
-    title: "real time price updates",
-    description:
-       "Stay informed with up-to-the-second price changes across your portfolio, helping you make timely decisions.",
-    icon: "/zap.png",
-  },
-  {
-    title: "Top-tier security",
-    description:
- "Your security is our priority. Access your portfolio with confidence, protected by industry-leading encryption and security protocols.",
-   
-    icon: "/padlock.png",
-  },
-];
+  const handleNewAnalysis = () => {
+    localStorage.removeItem("analysisContractCode");
+    localStorage.removeItem("analysisResult");
+    localStorage.removeItem("isAnalyzing");
+    router.push("/landing");
+  };
 
   return (
-   <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 relative overflow-hidden">
-  {/* Background Image */}
-  <div className="absolute top-0 right-0 w-full h-[100vh] lg:w-1/2 lg:right-[-10%] opacity-60 pointer-events-none z-0">
-    <Image
-      src="/bitcoin.png"
-      alt="Background"
-      fill
-      className="object-contain object-right-bottom lg:object-right"
-      priority
-    />
-  </div>
-
-  {/* Header */}
-  <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md shadow-sm z-50">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4 flex items-center justify-between">
-      <div className="flex items-center gap-2">
-                      <Image
-                        src="/cryptosnooplogo1.png"
-                        alt="App Logo"
-                        width={48}
-                        height={32}
-                        className="object-contain"
-                        priority
-                      />
-                      <div className="flex flex-col leading-none">
-                        <span
-                          className="font-bold text-sm sm:text-lg leading-tight"
-                          style={{ color: "#c750f7" }}
-                        >
-                          crypto
-                        </span>
-                        <span className="text-slate-700  font-bold text-sm sm:text-lg leading-tight -mt-1">
-                          Snoop
-                        </span>
-                      </div>
-                    </div>
-      <div className="flex gap-3">
-        <button
-          onClick={() => setIsAuthModalOpen(true)}
-          className="px-4 py-2 sm:px-6 sm:py-2 rounded-lg bg-[#c750f7] 
-          text-sm sm:text-base md:text-lg
-          text-white font-semibold hover:bg-[#d575fc] transition-all duration-300 shadow-lg hover:shadow-xl"
-        >
-          Get Started
-        </button>
-      </div>
-    </div>
-  </header>
-
-  {/* Hero Section */}
-  <main className="pt-20 sm:pt-32 pb-8 sm:pb-4 relative z-10">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-      <div className="text-center mb-8">
-        <div className="flex justify-center mb-4">
-          <span className="px-4 py-1 rounded-lg bg-[#c750f7] text-white 
-            text-xs sm:text-sm md:text-base font-medium">
-            Portfolio Management
-          </span>
-        </div>
-
-        <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-8 leading-tight px-4">
-          Keep your eyes on your <br />
-          <span className="bg-gradient-to-r from-[#d575fc] to-[#c750f7] bg-clip-text text-transparent">
-            crypto assets
-          </span>{" "}
-          without hassle
-        </h2>
-
-        <div className="max-w-2xl mx-auto flex flex-col gap-2 sm:mb-0 md:mb-8">
-          {/* Keep these stacked vertically on all screen sizes for consistent alignment */}
-          <div className="flex items-center justify-center sm:p-0 p-2">
-            <p className="text-sm sm:text-base md:text-lg lg:text-lg text-gray-700 font-semibold text-center">
-              Manage your crypto portfolio with real-time data
-            </p>
-          </div>
-
-          <div className="flex items-center justify-center sm:p-0 p-2">
-            <p className="text-sm sm:text-base md:text-lg lg:text-lg text-gray-700 font-semibold text-center">
-              Monitor remote crypto wallets
-            </p>
-          </div>
-
-          <div className="flex items-center justify-center sm:p-0 p-2 ">
-            <p className="text-sm sm:text-base md:text-lg lg:text-lg text-gray-700 font-semibold text-center">
-              Keep all your address labels securely in one place
-            </p>
-          </div>
-        </div>
-        
-
-        <button
-          onClick={() => setIsAuthModalOpen(true)}
-          className="px-6 py-3 sm:mt-0 md:mt-3 lg:mt-3 rounded-lg bg-[#c750f7] text-white font-semibold 
-          text-base sm:text-lg md:text-xl 
-          hover:bg-[#d575fc] transition-all duration-300 shadow-lg hover:shadow-xl"
-        >
-          Get started For Free
-        </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
       </div>
 
-    
-
-      {/* Coin Widget */}
-      <div className="relative overflow-hidden pb-2 sm:my-0 sm:-mt-4 md:my-4 ">
-        <div className="flex justify-center items-center min-h-[180px] sm:min-h-[220px]">
-          {loading ? (
-            <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-gray-300 border-t-[#c750f7] rounded-full animate-spin"></div>
-          ) : coins.length > 0 ? (
-            <div
-              className={`transition-all duration-500 ${
-                isAnimating
-                  ? "opacity-0 transform translate-x-full"
-                  : "opacity-100 transform translate-x-0"
-              }`}
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Header */}
+        <header className="border-b border-slate-700/50 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <button
+              onClick={handleNewAnalysis}
+              className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
             >
-              <div
-                className="relative backdrop-blur-xl bg-white/40 rounded-3xl shadow-2xl p-3 w-64 sm:w-80 border border-white/50"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(108, 198, 255, 0.2))",
-                  boxShadow:
-                    "0 8px 32px 0 rgba(90, 181, 238, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.5)",
-                }}
+              <ArrowLeft size={20} />
+              <span>Back to Analyzer</span>
+            </button>
+            <h1 className="text-2xl font-bold text-white">Smart Contract Analysis</h1>
+            <div className="w-24"></div>
+          </div>
+        </header>
+
+        {/* Main content */}
+        <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-96">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
               >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-2 sm:gap-4">
-                    <div className="w-10 h-10 sm:w-14 sm:h-14 bg-transparent rounded-full flex items-center justify-center overflow-hidden shadow-lg">
-                      <Image
-                        src={coins[currentCoin].icon}
-                        alt={coins[currentCoin].name}
-                        width={32}
-                        height={32}
-                        className="object-contain"
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                        {coins[currentCoin].name}
-                      </h3>
-                      <p className="text-xs sm:text-sm font-medium text-gray-600">
-                        {coins[currentCoin].symbol}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                      $
-                      {coins[currentCoin].price.toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </p>
-                    <p
-                      className={`text-xs sm:text-sm font-medium mt-1 ${
-                        coins[currentCoin].priceChange1d >= 0
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {coins[currentCoin].priceChange1d >= 0 ? "+" : ""}
-                      {coins[currentCoin].priceChange1d.toFixed(2)}% (24h)
-                    </p>
-                  </div>
-
-                  <button
-                    className="bg-[#c750f7] hover:bg-[#d575fc] text-white rounded-xl p-2 sm:p-3 
-                    transition-all duration-300 shadow-lg hover:shadow-xl"
-                    onClick={() => setIsAuthModalOpen(true)}
-                  >
-                    <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                </div>
-              </div>
+                <Loader size={48} className="text-blue-400" />
+              </motion.div>
             </div>
+          ) : analysisResult && analysisResult.success ? (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-8"
+              >
+                {/* Contract Complexity */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
+                >
+                  <h2 className="text-xl font-semibold text-white mb-4">Contract Complexity</h2>
+                  <div className="inline-block px-4 py-2 rounded-lg bg-purple-500/20 border border-purple-500/50">
+                    <span className="text-purple-300 font-medium">{analysisResult.complexity}</span>
+                  </div>
+                </motion.div>
+
+                {/* Gas Estimates */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <Zap className="text-yellow-400" size={24} />
+                    <h2 className="text-xl font-semibold text-white">Estimated Gas Costs by Chain</h2>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {analysisResult.gasEstimates.map((chain) => (
+                      <motion.div
+                        key={chain.chainId}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="bg-slate-700/50 border border-slate-600 rounded-lg p-4 hover:border-blue-500/50 transition-colors"
+                      >
+                        <h3 className="text-lg font-semibold text-blue-300 mb-3">{chain.chainName}</h3>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Gas Price:</span>
+                            <span className="text-white font-medium">{chain.gasPrice.toFixed(2)} GWEI</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Token:</span>
+                            <span className="text-white font-medium">{chain.tokenSymbol}</span>
+                          </div>
+                          <div className="flex justify-between pt-2 border-t border-slate-600">
+                            <span className="text-gray-400 font-semibold">Estimated Cost:</span>
+                            <span className="text-yellow-400 font-bold">${chain.estimatedGasCost.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* Optimization Suggestions */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <Coins className="text-green-400" size={24} />
+                    <h2 className="text-xl font-semibold text-white">Optimization Suggestions</h2>
+                  </div>
+                  <div className="prose prose-invert max-w-none">
+                    <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                      {analysisResult.optimizationSuggestions}
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Action Button */}
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  onClick={handleNewAnalysis}
+                  className="w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
+                >
+                  Analyze Another Contract
+                </motion.button>
+              </motion.div>
+            </AnimatePresence>
           ) : (
-            <div className="text-gray-500 text-sm sm:text-lg">...</div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-12"
+            >
+              <h2 className="text-2xl font-bold text-white mb-4">No analysis data available</h2>
+              <button
+                onClick={handleNewAnalysis}
+                className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Go to Analyzer
+              </button>
+            </motion.div>
           )}
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="space-y-32 mt-32">
-        {features.map((feature, index) => (
-          <div key={index} className="flex flex-col items-center gap-12 md:gap-16">
-            <SlideIn
-              direction={(index % 2 === 0 ? "left" : "right") as "left" | "right"}
-              delay={0.2}
-            >
-              <div className="flex-1">
-                <div className="relative w-full h-64 sm:h-80 md:h-96 rounded-3xl overflow-hidden bg-gradient-to-br from-[#6CC6FF]/5 to-[#5AB5EE]/0 flex items-center justify-center">
-                  <Image
-                    src={feature.icon}
-                    alt={feature.title}
-                    width={300}
-                    height={300}
-                    className="object-contain w-3/4 h-3/4 transition-all duration-500"
-                    priority
-                  />
-                </div>
-              </div>
-            </SlideIn>
+      <style jsx>{`
+        @keyframes blob {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+        }
 
-            <SlideIn direction={index % 2 === 0 ? "right" : "left"} delay={0.4}>
-              <div className="flex-1 space-y-6">
-                <h3 className="text-2xl sm:text-4xl md:text-5xl font-bold text-gray-900 text-center">
-                  {feature.title}
-                </h3>
-                <p className="text-sm sm:text-lg md:text-xl text-gray-900 leading-relaxed font-bold text-center">
-                  {feature.description}
-                </p>
-              </div>
-            </SlideIn>
-          </div>
-        ))}
-      </div>
-      <section className="w-full max-w-3xl mx-auto px-4 py-24">
-      {/* Header */}
-        <h2 className="text-center font-bold text-3xl sm:text-4xl md:text-5xl leading-tight mb-8 text-gray-900">
-        TemplateApp<br />Does tracking<br />Better
-      </h2>
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
 
-      {/* Feature Boxes */}
-      <div className="flex flex-col gap-4">
-        {additions.map((feature, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-3 bg-white shadow-sm rounded-2xl px-4 py-3 border border-gray-200 w-full"
-          >
-            <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl  flex items-center justify-center overflow-hidden relative">
-  <Image
-    src={feature.icon}
-    alt={feature.title}
-    fill
-    className="object-cover"
-  />
-</div>
-
-            <div className="flex flex-col">
-              <p className="font-semibold text-sm sm:text-base md:text-lg text-gray-900">{feature.title}</p>
-              <p className="text-gray-900 text-xs sm:text-sm md:text-base leading-snug">
-                {feature.description}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-
-      {/* CTA Section */}
-      <div className="mt-32 text-center rounded-3xl p-16">
-        <SlideIn direction="down" delay={0.2}>
-          <h3 className="text-2xl sm:text-4xl md:text-5xl font-bold text-[#c750f7] mb-6">
-            Want to start tracking?
-          </h3>
-          <p className="text-sm sm:text-lg md:text-xl text-[#c750f7] mb-8 font-bold">
-            Use cryptosnoop to manage your crypto assets and holdings with ease
-          </p>
-        </SlideIn>
-
-        <SlideIn direction="up" delay={0.2}>
-          <button
-            onClick={() => setIsAuthModalOpen(true)}
-            className="px-6 py-3 sm:px-8 sm:py-3 rounded-lg bg-[#c750f7] text-white font-semibold 
-            text-base sm:text-lg md:text-xl
-            hover:bg-[#d575fc] transition-all duration-300 shadow-lg hover:shadow-xl"
-          >
-            Get Tracking now
-          </button>
-        </SlideIn>
-      </div>
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+      `}</style>
     </div>
-  </main>
-
-  {/* Footer */}
-  <footer className="mt-32 bg-white text-gray-900 py-12 relative z-10">
-   
-  </footer>
-
-  {/* Auth Modal */}
-  <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
-</div>
-
   );
-}
+};
 
-export default TemplateApp
-
+export default HomePage;
