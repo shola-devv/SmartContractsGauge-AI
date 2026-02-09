@@ -14,7 +14,6 @@ interface AnalysisRequest {
 interface AnalysisResponse {
   success: boolean;
   contractCode: string;
-  complexity: string;
   gasEstimates: Array<{
     chainId: string;
     chainName: string;
@@ -23,6 +22,7 @@ interface AnalysisResponse {
     tokenSymbol: string;
   }>;
   optimizationSuggestions: string;
+  complexity: string;
   error?: string;
 }
 
@@ -51,12 +51,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Fetch gas data for all chains
     const chainGasData = await fetchChainGasData();
 
-    // Prepare the prompt for OpenAI
+    // Prepare the prompt for OpenAI, prompt should carry my fetched gas data and my precalc code compecity
     const systemPrompt = `You are an expert smart contract auditor and gas optimization specialist. 
 Analyze the provided Solidity smart contract code and provide:
-1. Specific optimization recommendations to reduce gas costs
-2. Security considerations
-3. Best practices for efficient smart contract development
+1 An estimate of the contracts gas costs based on the chain data given
+2. Specific optimization recommendations to reduce gas costs
+3. Security considerations
+4. An overall complexity assessment (Low, Medium, High) based on the code structure and patterns used.
 Keep your response concise but detailed, focusing on actionable improvements.`;
 
     const userPrompt = `Please analyze this smart contract and provide optimization suggestions:
@@ -90,9 +91,9 @@ Focus on:
     return NextResponse.json({
       success: true,
       contractCode: contractCode.substring(0, 100) + "...", // Store only first 100 chars
-      complexity,
-      gasEstimates: chainGasData,
+      gasEstimates: chainGasData,///the fucl
       optimizationSuggestions,
+      complexity
     } as AnalysisResponse);
   } catch (error) {
     console.error("Error analyzing contract:", error);
