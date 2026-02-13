@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Moon, Sun, Paperclip, Mic, Send } from 'lucide-react';
@@ -10,6 +10,32 @@ export default function LandingPage() {
   const [inputValue, setInputValue] = useState('');
   const controls = useAnimation();
   const router = useRouter();
+  
+  const [showTooltip, setShowTooltip] = useState<string | null>(null);
+const [isTyping, setIsTyping] = useState(false);
+const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+useEffect(() => {
+  if (textareaRef.current) {
+    textareaRef.current.style.height = "auto";
+    textareaRef.current.style.height =
+      textareaRef.current.scrollHeight + "px";
+  }
+
+  if (inputValue.trim()) {
+    setIsTyping(true);
+    const timeout = setTimeout(() => setIsTyping(false), 800);
+    return () => clearTimeout(timeout);
+  }
+}, [inputValue]);
+
+useEffect(() => {
+  if (showTooltip) {
+    const timeout = setTimeout(() => setShowTooltip(null), 2000);
+    return () => clearTimeout(timeout);
+  }
+}, [showTooltip]);
+
 
   const handleSend = async () => {
     if (inputValue.trim()) {
@@ -71,7 +97,21 @@ export default function LandingPage() {
               )}
             </button>
 
-            <button className="cursor-pointer rounded-xl bg-gradient-to-br from-primaryDark via-primary via-sky-300 to-primaryLight text-surfaceLight px-4 py-2 sm:px-6 sm:py-2 rounded-neu font-semibold text-sm sm:text-base md:text-lg transition-all duration-300 shadow-neu dark:shadow-neuDark hover:shadow-neuInset dark:hover:shadow-neuInsetDark active:shadow-neuInset dark:active:shadow-neuInsetDark">
+            <button className="
+    cursor-pointer
+    px-6 py-2
+    rounded-2xl
+    bg-gradient-to-br from-primaryDark via-primary via-sky-300 to-primaryLight
+    text-surfaceLight
+    font-semibold
+    text-sm sm:text-base md:text-lg
+    transition-all duration-300
+
+    shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.25)]
+    
+    hover:shadow-[6px_6px_14px_rgba(0,0,0,0.3),_-6px_-6px_14px_rgba(255,255,255,0.2)]
+    
+    active:shadow-[inset_6px_6px_12px_rgba(0,0,0,0.35),_inset_-6px_-6px_12px_rgba(255,255,255,0.2)]">
               Start Building for free
             </button>
           </div>
@@ -115,88 +155,150 @@ export default function LandingPage() {
           </div>
 
           {/* Input Box with Animation */}
-          <motion.div
-            animate={controls}
-            className="max-w-3xl mx-auto relative"
+<motion.div
+  animate={controls}
+  className="max-w-3xl mx-auto relative"
+>
+  {/* Decorative curved line - left */}
+  <div className="absolute -left-8 sm:-left-16 md:-left-24 top-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 pointer-events-none hidden lg:block">
+    <svg viewBox="0 0 200 200" className="w-full h-full">
+      <path
+        d="M 150 10 Q 100 50, 100 100"
+        stroke="currentColor"
+        strokeWidth="20"
+        fill="none"
+        className="text-primaryLight opacity-60"
+        strokeLinecap="round"
+      />
+    </svg>
+  </div>
+
+  {/* Decorative curved line - right */}
+  <div className="absolute -right-8 sm:-right-16 md:-right-24 bottom-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 pointer-events-none hidden lg:block">
+    <svg viewBox="0 0 200 200" className="w-full h-full">
+      <path
+        d="M 50 100 Q 100 150, 150 190"
+        stroke="currentColor"
+        strokeWidth="20"
+        fill="none"
+        className="text-primaryLight opacity-60"
+        strokeLinecap="round"
+      />
+    </svg>
+  </div>
+
+  {/* Input Container */}
+  <div className="relative bg-surface dark:bg-slate-800 rounded-neu shadow-neu dark:shadow-neuDark p-3 sm:p-4 md:p-6 transition-all duration-300">
+
+    <label className="block text-sm sm:text-base md:text-lg font-medium text-surfaceDark dark:text-gray-300 mb-4">
+      paste in your smart contract and AI does the magic:
+    </label>
+
+    {/* Input Wrapper */}
+    <div className="relative">
+
+      {/* AI Pulse */}
+      <div
+        className={`absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-500 ${
+          isTyping
+            ? "opacity-100 animate-pulse bg-gradient-to-r from-primary/10 via-primaryLight/10 to-primary/10"
+            : "opacity-0"
+        }`}
+      />
+
+      <textarea
+        ref={textareaRef}
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        placeholder="pragma solidity..."
+        rows={1}
+        className=" relative
+  w-full
+  min-h-[100px]
+  max-h-68
+  pl-4 pr-32 py-3
+  rounded-2xl
+  bg-gradient-to-br from-primaryDark/40 via-primary/30 to-primaryLight/40
+  backdrop-blur-md
+  resize-none
+  overflow-hidden
+  text-surfaceDark dark:text-white
+  placeholder-surfaceShadow dark:placeholder-gray-400
+  text-sm sm:text-base
+  transition-all duration-300
+  focus:outline-none
+
+  shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
+  
+  focus:shadow-[inset_6px_6px_14px_rgba(0,0,0,0.4),_inset_-6px_-6px_14px_rgba(255,255,255,0.15)]"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && e.metaKey) {
+            handleSend();
+          }
+        }}
+      />
+
+      {/* ICON ROW */}
+      <div className="absolute bottom-3 right-3 flex items-center gap-2">
+
+        {/* Paperclip */}
+        <div className="relative group">
+          <button
+            disabled
+            onClick={() => setShowTooltip("clip")}
+            className="p-2 rounded-full shadow-neu dark:shadow-neuDark opacity-50 cursor-not-allowed"
           >
-            {/* Decorative curved line */}
-            <div className="sky-300 absolute -left-8 sm:-left-16 md:-left-24 top-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 pointer-events-none hidden lg:block">
-              <svg viewBox="0 0 200 200" className="w-full h-full">
-                <path
-                  d="M 150 10 Q 100 50, 100 100"
-                  stroke="currentColor"
-                  strokeWidth="20"
-                  fill="none"
-                  className="text-primaryLight opacity-60"
-                  strokeLinecap="round"
-                />
-              </svg>
+            <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+
+          {(showTooltip === "clip") && (
+            <div className="absolute bottom-12 right-0 bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">
+              Coming soon
             </div>
+          )}
+        </div>
 
-            {/* Decorative curved line - right side */}
-            <div className=" absolute -right-8 sm:-right-16 md:-right-24 bottom-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 pointer-events-none hidden lg:block">
-              <svg viewBox="0 0 200 200" className="w-full h-full ">
-                <path
-                  d="M 50 100 Q 100 150, 150 190"
-                  stroke="currentColor"
-                  strokeWidth="20"
-                  fill="none"
-                  className="text-primaryLight opacity-60 purple-300 "
-                  strokeLinecap="round"
-                />
-              </svg>
+        {/* Mic */}
+        <div className="relative group">
+          <button
+            disabled
+            onClick={() => setShowTooltip("mic")}
+            className="p-2 rounded-full shadow-neu dark:shadow-neuDark opacity-50 cursor-not-allowed"
+          >
+            <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+
+          {(showTooltip === "mic") && (
+            <div className="absolute bottom-12 right-0 bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">
+              Coming soon
             </div>
+          )}
+        </div>
 
-            {/* Input Container */}
-            <div className="relative bg-surface dark:bg-slate-800 rounded-neu shadow-neu dark:shadow-neuDark p-3 sm:p-4 md:p-6 transition-all duration-300">
-              <div className="mb-3 sm:mb-4 md:mb-6">
-                <label className="block text-sm sm:text-base md:text-lg font-medium text-surfaceDark dark:text-gray-300 mb-3 sm:mb-4">
-                  Describe your smart contract and AI does the magic
-                </label>
-                
-                <textarea
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="pragma solidity..."
-                  className="w-full h-32 sm:h-40 md:h-48 px-4 py-3 bg-transparent rounded-neu shadow-neuInset dark:shadow-neuInsetDark focus:shadow-neu dark:focus:shadow-neuDark focus:outline-none resize-none text-surfaceDark dark:text-white placeholder-surfaceShadow dark:placeholder-gray-500 transition-all duration-500 text-sm sm:text-base border-4 rounded-2xl"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && e.metaKey) {
-                      handleSend();
-                    }
-                  }}
-                />
-              </div>
+        {/* Send Button */}
+        <motion.button
+          onClick={handleSend}
+          whileHover={{ scale: inputValue.trim() ? 1.07 : 1 }}
+          whileTap={{ scale: inputValue.trim() ? 0.95 : 1 }}
+          disabled={!inputValue.trim()}
+          className={`
+            relative p-2 rounded-full
+            bg-slate-900 dark:bg-black
+            transition-all duration-300
+            ${
+              inputValue.trim()
+                ? "ring-2 ring-primaryLight/60 shadow-[0_0_20px_rgba(99,102,241,0.6)]"
+                : "opacity-50 cursor-not-allowed"
+            }
+          `}
+        >
+          <Send className="w-4 cursor-pointer h-4 sm:w-5 sm:h-5 text-white" />
+        </motion.button>
 
-              {/* Action Buttons */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <button
-                    className="cursor-pointer p-2 sm:p-3 rounded-full shadow-neu dark:shadow-neuDark hover:shadow-neuInset dark:hover:shadow-neuInsetDark active:shadow-neuInset dark:active:shadow-neuInsetDark transition-all duration-300"
-                    aria-label="Attach file"
-                  >
-                    <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                  <button
-                    className="cursor-pointer p-2 sm:p-3 rounded-full shadow-neu dark:shadow-neuDark hover:shadow-neuInset dark:hover:shadow-neuInsetDark active:shadow-neuInset dark:active:shadow-neuInsetDark transition-all duration-300"
-                    aria-label="Voice input"
-                  >
-                    <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                </div>
-
-                <motion.button
-                  onClick={handleSend}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-gradient-to-br from-primaryDark via-primary to-primaryLight text-surfaceLight p-2 sm:p-3 rounded-full transition-all duration-300 shadow-neu dark:shadow-neuDark hover:shadow-neuInset dark:hover:shadow-neuInsetDark active:shadow-neuInset dark:active:shadow-neuInsetDark disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={!inputValue.trim()}
-                  aria-label="Send"
-                >
-                  <Send className="cursor-pointer w-4 h-4 sm:w-5 sm:h-5" />
-                </motion.button>
-              </div>
-            </div>
-          </motion.div>
+      </div>
+    </div>
+  </div>
+</motion.div>
 
           {/* Additional Info */}
           <motion.div
