@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { Moon, Sun, Paperclip, Mic, Send } from 'lucide-react';
+import { Moon, Sun, Paperclip, Mic, Send, Braces } from 'lucide-react';
 
 export default function LandingPage() {
   const [darkMode, setDarkMode] = useState(false);
@@ -101,7 +101,7 @@ useEffect(() => {
     cursor-pointer
     px-6 py-2
     rounded-2xl
-    bg-gradient-to-br from-primaryDark via-primary via-sky-300 to-primaryLight
+    bg-gradient-to-br from-primaryDark via-primary via-green-400 to-primaryLight
     text-surfaceLight
     font-semibold
     text-sm sm:text-base md:text-lg
@@ -124,7 +124,7 @@ useEffect(() => {
           {/* Hero Text */}
           <div className="text-center mb-8">
             <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-8 leading-tight px-4">
-              <span className="text-surfaceDark dark:text-white">Understand your smart contracts </span>
+              <span className="text-surfaceDark dark:text-white">Understand what your smart contracts </span>
               <span className="relative inline-block">
                
                 <motion.span
@@ -132,25 +132,21 @@ useEffect(() => {
                   animate={{ rotate: [0, 10, -10, 0] }}
                   transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
                 >
-                  ✨
+                  <Braces className="text-green-400 w-10 h-10 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-28 lg:h-28 xl:w-36 xl:h-36" />
                 </motion.span>
               </span>
-              <span className="text-surfaceDark dark:text-white">,</span>
+              
               <br />
-              <span className="text-surfaceDark dark:text-white">And what They Cost You.</span>
+              <span className="text-surfaceDark dark:text-white">Costs You Before you Deploy.</span>
             </h1>
             
             <div className="max-w-2xl mx-auto flex flex-col gap-2 mb-8">
               <div className="flex items-center justify-center p-2 sm:p-0">
                 <p className="text-sm sm:text-base md:text-lg lg:text-lg text-surfaceDark dark:text-gray-300 font-semibold text-center">
-                  Ai analyses how much gas your contacts costs on EVM chains
+                  Instant gas estimates, complexity insights, and AI-driven gas optimisation suggestions
                 </p>
               </div>
-              <div className="flex items-center justify-center p-2 sm:p-0">
-                <p className="text-sm sm:text-base md:text-lg lg:text-lg text-surfaceDark/80 dark:text-gray-400 font-semibold text-center">
-                  optimisation suggestions, sontract complexity and more provided by theAi 
-                </p>
-              </div>
+              
             </div>
           </div>
 
