@@ -11,6 +11,103 @@ interface Message {
   timestamp: Date;
 }
 
+// Animated Grid Background Component
+const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
+  const [gridLines, setGridLines] = useState<Array<{
+    id: number;
+    isHorizontal: boolean;
+    position: number;
+    delay: number;
+  }>>([]);
+
+  useEffect(() => {
+    // Generate random grid lines that will animate
+    const lines = Array.from({ length: 8 }, (_, i) => ({
+      id: i,
+      isHorizontal: Math.random() > 0.5,
+      position: Math.random() * 100,
+      delay: Math.random() * 3,
+    }));
+    setGridLines(lines);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      {/* Grid container */}
+      <div className="absolute inset-0 opacity-50 dark:opacity-60">
+        {/* Static grid squares for responsive sizing */}
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(34, 197, 94, 0.35) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(34, 197, 94, 0.35) 1px, transparent 1px)
+          `,
+          backgroundSize: 'clamp(40px, 8vw, 100px) clamp(40px, 8vw, 100px)'
+        }} />
+
+        {/* Animated Vertical lines */}
+        {gridLines.filter(line => !line.isHorizontal).map((line) => (
+          <motion.div
+            key={`v-${line.id}`}
+            className="absolute top-0 bottom-0"
+            style={{ left: `${line.position}%` }}
+            initial={{ height: 0, top: '50%' }}
+            animate={{ 
+              height: '100%',
+              top: 0,
+            }}
+            transition={{
+              duration: 2,
+              delay: line.delay,
+              repeat: Infinity,
+              repeatDelay: 5,
+              ease: "easeInOut"
+            }}
+          >
+            {/* Outer glow effect - brighter with green-200 */}
+            <div className="absolute inset-0 w-[12px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-200/90 to-transparent blur-lg" />
+            {/* Middle glow - brighter */}
+            <div className="absolute inset-0 w-[6px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-200 to-transparent blur-md" />
+            {/* Inner glow - bright */}
+            <div className="absolute inset-0 w-[3px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-300 to-transparent blur-sm" />
+            {/* Main line - green-500 core */}
+            <div className="absolute inset-0 w-[2px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-500 to-transparent" />
+          </motion.div>
+        ))}
+
+        {/* Animated Horizontal lines */}
+        {gridLines.filter(line => line.isHorizontal).map((line) => (
+          <motion.div
+            key={`h-${line.id}`}
+            className="absolute left-0 right-0"
+            style={{ top: `${line.position}%` }}
+            initial={{ width: 0, left: '50%' }}
+            animate={{ 
+              width: '100%',
+              left: 0,
+            }}
+            transition={{
+              duration: 2,
+              delay: line.delay,
+              repeat: Infinity,
+              repeatDelay: 5,
+              ease: "easeInOut"
+            }}
+          >
+            {/* Outer glow effect - brighter with green-200 */}
+            <div className="absolute inset-0 h-[12px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-200/90 to-transparent blur-lg" />
+            {/* Middle glow - brighter */}
+            <div className="absolute inset-0 h-[6px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-200 to-transparent blur-md" />
+            {/* Inner glow - bright */}
+            <div className="absolute inset-0 h-[3px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-300 to-transparent blur-sm" />
+            {/* Main line - green-500 core */}
+            <div className="absolute inset-0 h-[2px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-500 to-transparent" />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default function ChatInterfaceClient() {
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -81,10 +178,13 @@ export default function ChatInterfaceClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden">
+      {/* Animated Grid Background */}
+      <AnimatedGrid darkMode={darkMode} />
+
       {/* Background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400 dark:bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-400 dark:bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-green-400 dark:bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-emerald-400 dark:bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob animation-delay-2000"></div>
       </div>
 
       {/* Sidebar Overlay */}
@@ -114,10 +214,12 @@ export default function ChatInterfaceClient() {
               {/* Sidebar Header */}
               <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700/50">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <MessageSquare className="w-6 h-6 text-white" />
-                  </div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">ChatAI</h2>
+                  <img 
+                    src="/smart gauge.png" 
+                    alt="Smart Gauge Logo" 
+                    className="w-10 h-10 object-contain"
+                  />
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Smart Gauge</h2>
                 </div>
                 <button
                   onClick={() => setIsSidebarOpen(false)}
@@ -129,7 +231,7 @@ export default function ChatInterfaceClient() {
 
               {/* New Chat Button */}
               <div className="p-4">
-                <button className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 shadow-lg">
+                <button className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium rounded-lg transition-all duration-200 shadow-lg">
                   <Plus className="w-5 h-5" />
                   <span>New Chat</span>
                 </button>
@@ -145,7 +247,7 @@ export default function ChatInterfaceClient() {
                     key={i}
                     className="w-full text-left px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-colors group"
                   >
-                    <div className="text-sm font-medium text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                    <div className="text-sm font-medium text-slate-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors truncate">
                       Contract Analysis #{i}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">2 hours ago</div>
@@ -163,10 +265,10 @@ export default function ChatInterfaceClient() {
                 </div>
                 <div className="space-y-2">
                   {[
-                    { name: "Ethereum", price: "25.4", color: "text-blue-600 dark:text-blue-400" },
-                    { name: "Polygon", price: "32.1", color: "text-purple-600 dark:text-purple-400" },
-                    { name: "Arbitrum", price: "0.15", color: "text-cyan-600 dark:text-cyan-400" },
-                    { name: "Optimism", price: "0.21", color: "text-red-600 dark:text-red-400" },
+                    { name: "Ethereum", price: "25.4", color: "text-green-600 dark:text-green-400" },
+                    { name: "Polygon", price: "32.1", color: "text-emerald-600 dark:text-emerald-400" },
+                    { name: "Arbitrum", price: "0.15", color: "text-teal-600 dark:text-teal-400" },
+                    { name: "Optimism", price: "0.21", color: "text-lime-600 dark:text-lime-400" },
                   ].map((chain) => (
                     <div
                       key={chain.name}
@@ -227,10 +329,12 @@ export default function ChatInterfaceClient() {
 
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-white" />
-              </div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">ChatAI</h1>
+              <img 
+                src="/smart gauge.png" 
+                alt="Smart Gauge Logo" 
+                className="w-8 h-8 object-contain"
+              />
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Smart Gauge</h1>
             </div>
 
             <div className="w-10"></div>
@@ -254,7 +358,7 @@ export default function ChatInterfaceClient() {
               {messages.length === 0 ? (
                 <div className="text-center py-12">
                   <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-                    Welcome to ChatAI
+                    Welcome to Smart Gauge
                   </h2>
                   <p className="text-slate-600 dark:text-gray-400 text-lg">
                     Paste your smart contract and let AI do the magic
@@ -273,7 +377,7 @@ export default function ChatInterfaceClient() {
                     <div
                       className={`max-w-[80%] rounded-2xl px-6 py-4 ${
                         message.sender === "user"
-                          ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white"
+                          ? "bg-gradient-to-br from-green-600 to-emerald-600 text-white"
                           : "bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-gray-200"
                       }`}
                     >
@@ -283,7 +387,7 @@ export default function ChatInterfaceClient() {
                       <div
                         className={`text-xs mt-2 ${
                           message.sender === "user"
-                            ? "text-blue-100"
+                            ? "text-green-100"
                             : "text-slate-500 dark:text-gray-500"
                         }`}
                       >
@@ -336,7 +440,7 @@ export default function ChatInterfaceClient() {
                     <div
                       className={`absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-500 ${
                         isTyping
-                          ? "opacity-100 animate-pulse bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-blue-500/10"
+                          ? "opacity-100 animate-pulse bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-green-500/10"
                           : "opacity-0"
                       }`}
                     />
@@ -353,7 +457,7 @@ export default function ChatInterfaceClient() {
                         max-h-68
                         pl-4 pr-32 py-3
                         rounded-2xl
-                        bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50 dark:from-blue-900/40 dark:via-blue-800/30 dark:to-purple-900/40
+                        bg-gradient-to-br from-slate-100 via-slate-50 to-green-50 dark:from-green-900/40 dark:via-green-800/30 dark:to-emerald-900/40
                         backdrop-blur-md
                         resize-none
                         overflow-hidden
@@ -421,7 +525,7 @@ export default function ChatInterfaceClient() {
                           transition-all duration-300
                           ${
                             inputValue.trim()
-                              ? "ring-2 ring-blue-400/60 shadow-[0_0_20px_rgba(99,102,241,0.6)]"
+                              ? "ring-2 ring-green-400/60 shadow-[0_0_20px_rgba(34,197,94,0.6)]"
                               : "opacity-50 cursor-not-allowed"
                           }
                         `}

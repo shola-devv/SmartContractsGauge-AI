@@ -22,7 +22,7 @@ const geistMono = localFont({
 
 
 export const metadata: Metadata = {
-  title: "cryptosnoop",
+  title: "smart gauge",
   description: "Track your crypto portfolio and holdings with ease",
   
 

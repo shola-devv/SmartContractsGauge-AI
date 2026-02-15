@@ -5,6 +5,103 @@ import { motion, useAnimation } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Moon, Sun, Paperclip, Mic, Send, Braces } from 'lucide-react';
 
+// Animated Grid Background Component
+const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
+  const [gridLines, setGridLines] = useState<Array<{
+    id: number;
+    isHorizontal: boolean;
+    position: number;
+    delay: number;
+  }>>([]);
+
+  useEffect(() => {
+    // Generate random grid lines that will animate
+    const lines = Array.from({ length: 8 }, (_, i) => ({
+      id: i,
+      isHorizontal: Math.random() > 0.5,
+      position: Math.random() * 100,
+      delay: Math.random() * 3,
+    }));
+    setGridLines(lines);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      {/* Grid container */}
+      <div className="absolute inset-0 opacity-50 dark:opacity-60">
+        {/* Static grid squares for responsive sizing */}
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(34, 197, 94, 0.35) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(34, 197, 94, 0.35) 1px, transparent 1px)
+          `,
+          backgroundSize: 'clamp(40px, 8vw, 100px) clamp(40px, 8vw, 100px)'
+        }} />
+
+        {/* Animated Vertical lines */}
+        {gridLines.filter(line => !line.isHorizontal).map((line) => (
+          <motion.div
+            key={`v-${line.id}`}
+            className="absolute top-0 bottom-0"
+            style={{ left: `${line.position}%` }}
+            initial={{ height: 0, top: '50%' }}
+            animate={{ 
+              height: '100%',
+              top: 0,
+            }}
+            transition={{
+              duration: 2,
+              delay: line.delay,
+              repeat: Infinity,
+              repeatDelay: 5,
+              ease: "easeInOut"
+            }}
+          >
+            {/* Outer glow effect - brighter with green-200 */}
+            <div className="absolute inset-0 w-[12px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-200/90 to-transparent blur-lg" />
+            {/* Middle glow - brighter */}
+            <div className="absolute inset-0 w-[6px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-200 to-transparent blur-md" />
+            {/* Inner glow - bright */}
+            <div className="absolute inset-0 w-[3px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-300 to-transparent blur-sm" />
+            {/* Main line - green-500 core */}
+            <div className="absolute inset-0 w-[2px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-500 to-transparent" />
+          </motion.div>
+        ))}
+
+        {/* Animated Horizontal lines */}
+        {gridLines.filter(line => line.isHorizontal).map((line) => (
+          <motion.div
+            key={`h-${line.id}`}
+            className="absolute left-0 right-0"
+            style={{ top: `${line.position}%` }}
+            initial={{ width: 0, left: '50%' }}
+            animate={{ 
+              width: '100%',
+              left: 0,
+            }}
+            transition={{
+              duration: 2,
+              delay: line.delay,
+              repeat: Infinity,
+              repeatDelay: 5,
+              ease: "easeInOut"
+            }}
+          >
+            {/* Outer glow effect - brighter with green-200 */}
+            <div className="absolute inset-0 h-[12px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-200/90 to-transparent blur-lg" />
+            {/* Middle glow - brighter */}
+            <div className="absolute inset-0 h-[6px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-200 to-transparent blur-md" />
+            {/* Inner glow - bright */}
+            <div className="absolute inset-0 h-[3px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-300 to-transparent blur-sm" />
+            {/* Main line - green-500 core */}
+            <div className="absolute inset-0 h-[2px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-500 to-transparent" />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default function LandingPage() {
   const [darkMode, setDarkMode] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -56,19 +153,26 @@ useEffect(() => {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
+    <div className={`min-h-screen transition-colors duration-300 relative ${
       darkMode ? 'dark bg-slate-900 text-white' : 'bg-surface'
     }`}>
+      {/* Animated Grid Background */}
+      <AnimatedGrid darkMode={darkMode} />
+
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-2 sm:py-4 bg-surface/80 dark:bg-slate-900/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primaryLight via-primary to-primaryDark rounded-neu shadow-neu dark:shadow-neuDark flex items-center justify-center">
-              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-surfaceLight rounded-sm transform rotate-45"></div>
-            </div>
-            <span className="text-sm sm:text-lg font-bold bg-gradient-to-r from-primary to-primaryDark bg-clip-text text-transparent">
-              Dazl.
+            {/* Logo Image */}
+            <img 
+              src="/smart gauge.png" 
+              alt="Smart Gauge Logo" 
+              className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 xl:w-20 xl:h-20 object-contain"
+            />
+            {/* Brand Text */}
+            <span className="text-sm sm:text-lg font-bold bg-gradient-to-r from-primary to-primaryDark bg-clip-text dark:text-white">
+              Smart Gauge
             </span>
           </div>
 
@@ -119,7 +223,7 @@ useEffect(() => {
       </nav>
 
       {/* Hero Section */}
-      <main className="pt-20 sm:pt-32 pb-8 sm:pb-4 px-4 sm:px-6 lg:px-8">
+      <main className="relative z-10 pt-20 sm:pt-32 pb-8 sm:pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Hero Text */}
           <div className="text-center mb-8">
